@@ -41,7 +41,7 @@ var catAnimals = [
     },
 
     {
-        q: ["What collor is hippopotamus milk?",
+        q: ["What color is hippopotamus milk?",
             "Pink",
             { a: "Blue" },
             { a: "White" },
