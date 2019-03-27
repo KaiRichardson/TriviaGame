@@ -1,3 +1,4 @@
+// first catagory
 var catAnimals = [
     {
         q: ["what is the only animal that can not jump?",
@@ -103,54 +104,113 @@ var catAnimals = [
 // general vars 
 var correct = 0;
 var incorrect = 0;
+var width = 100;
+
+// boolean vars
+var timer;
 var gameRunning = false;
+var aPage = false;
+
+// empty strings/arrays
 var a = "";
 var b = "";
 var img = "";
 var alreadyAsked = [];
-var aPage = false;
-var timer;
 
-$("#trivia_animals_btn").click(function gameStart() {
-    correct = 0;
-    incorrect = 0;
+$(document).ready(function () {
+    console.log("ready!");
+    var catDiv = $("<div id='innerBody'>");
 
-    if (!gameRunning) {
-        gameRunning = true;
+    var barDiv = $("<div id='bar_wrapper'>");
+    var insideBarDiv = $("<div id='progress_bar'>" + 5 + "</div>");
+    barDiv.append(insideBarDiv);
+    catDiv.append(barDiv);
 
-        questionAsk()
-    };
+    var headDiv = $("<h2>").text("Please Pick a Category");
+    headDiv.attr('id', 'body_head');
+    catDiv.append(headDiv);
 
+    var bodyBtnDiv = $("<div id='body_buttons'>");
+    var btnDiv = $("<button>").text("Animals");
+    btnDiv.addClass("btn");
+    btnDiv.attr('id', 'trivia_animals_btn');
+    bodyBtnDiv.append(btnDiv);
+    catDiv.append(bodyBtnDiv);
+    $("#main_body").append(catDiv);
+
+
+    // on catagory button click reset
+    $("#trivia_animals_btn").click(function gameStart() {
+        // general vars 
+        correct = 0;
+        incorrect = 0;
+
+        // // boolean vars
+        // timer;
+        // gameRunning = false;
+        // aPage = false;
+
+        // // empty strings/arrays
+        // a = "";
+        // b = "";
+        // img = "";
+        // alreadyAsked = [];
+
+        // if game is runing button does nothing
+        if (!gameRunning) {
+            gameRunning = true;
+
+            questionAsk()
+        };
+
+    });
 });
 
+// main question page
 function questionAsk() {
     aPage = false;
     var randNum = Math.floor(Math.random() * 11);
     var catQuestion = catAnimals[randNum];
 
-    progressBar(30);
+    // adding a progress bar funct
+    progressBar(5);
     $("#bar_wrapper").css("visibility", "visible");
 
-    $("#body_head").html("<h2>" + catQuestion.q[0] + "</h2>");
+    // asking question
+    var q = $("<h2>");
+    q.attr("data-name", catQuestion.q[0]);
+    q.text(catQuestion.q[0]);
+    $("#body_buttons").append(q);
     $("#body_buttons").html("");
 
+    // var bodyBtnDiv = $("<div id='body_buttons'>");
+    // creating 4 answer buttons
     for (i = 2; i < 6; i++) {
-        $("#body_buttons").append("<button>" + catQuestion.q[i].a + "</button>");
-        $("#body_buttons button").addClass("btn");
-        $("#body_buttons").append("<br>");
+        var btnDiv = $("<button>").text(catQuestion.q[i].a);
+        btnDiv.addClass("btn");
+        var brDiv = $("<br>");
+        btnDiv.append(brDiv);
+        $("#body_buttons").append(btnDiv);
+        
+        // $("#body_buttons").append("<button>" + catQuestion.q[i].a + "</button>");
+        // $("#body_buttons button").addClass("btn");
+        // $("#body_buttons").append("<br>");
     }
 
+    // on clicked answer
     $(".btn").click(function anPicked() {
-        a = $(this).text();
+        a = $(this).text($("#body_buttons"));
         b = catQuestion.q[1];
         img = catQuestion.q[6];
         console.log(a);
 
+        // if correct, incrementv and send to answer page
         if (a === b) {
             correct++;
             $("#body_head").html("<h2>Nice job! You got it right!</h2>");
             ansPage();
 
+            // if correct, increment^ and send to answer page
         } else {
             incorrect++;
             $("#body_head").html("<h2>Oh no! Thats not right!</h2>");
@@ -159,11 +219,17 @@ function questionAsk() {
     });
 };
 
+// progress bar funct with argument of time
 function progressBar(time) {
-    var width = 100;
-    timer = setInterval(qPage, 1000);
+    width = 100;
+
+    //returning prog bar to green
     $("#progress_bar").css("background-color", "green");
-    
+
+    // setting time per funct call
+    timer = setInterval(qPage, 1000);
+
+    // bar movment/color change funct
     function qPage() {
         time--;
         width -= (width / time);
@@ -175,29 +241,33 @@ function progressBar(time) {
             $("#progress_bar").css("background-color", "red");
         }
 
+        // when timeout on question page 
         if (time <= 0) {
+
+            // is ansPage() running?
             if (aPage === false) {
                 aPage = true;
                 incorrect--;
                 clearInterval(timer);
-                ansPage();            
+                ansPage();
             }
             else {
                 clearInterval(timer);
-                questionAsk();            
+                questionAsk();
             }
         } else {
             console.log(time);
-            $("#progress_bar").text("00:" + time);
+            $("#progress_bar").text(time);
             $("#progress_bar").css("width", width + "%");
         };
     };
 };
 
+
 function ansPage() {
     aPage = true;
     clearInterval(timer);
-    progressBar(10);
+    progressBar(5);
     $("#bar_wrapper").css("visibility", "hidden");
     $("#body_buttons").html("<h3>The correct answer was: " + b + "</h3>");
     $("#body_buttons").append("<img src=" + img + " alt='gif'>");
