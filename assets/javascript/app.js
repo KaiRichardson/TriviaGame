@@ -105,24 +105,37 @@ var catAnimals = [
 var correct = 0;
 var incorrect = 0;
 var width = 100;
-
-// boolean vars
-var timer;
-var gameRunning = false;
-var aPage = false;
+var time = 10;
+var qNum = 0;
 
 // empty strings/arrays
 var a = "";
 var b = "";
 var img = "";
-var alreadyAsked = [];
 
-$(document).ready(function () {
+$(document).ready(gameStart);
+
+function gameStart() {
+    // general vars 
+    correct = 0;
+    incorrect = 0;
+    width = 100;
+    time = 10;
+    qNum = 0;
+
+    // empty strings/arrays
+    a = "";
+    b = "";
+    img = "";
+
     console.log("ready!");
+    $("#main_body").empty();
+
+    // Creating the divs
     var catDiv = $("<div id='innerBody'>");
 
     var barDiv = $("<div id='bar_wrapper'>");
-    var insideBarDiv = $("<div id='progress_bar'>" + 5 + "</div>");
+    var insideBarDiv = $("<div id='progress_bar'>" + time + "</div>");
     barDiv.append(insideBarDiv);
     catDiv.append(barDiv);
 
@@ -136,139 +149,146 @@ $(document).ready(function () {
     btnDiv.attr('id', 'trivia_animals_btn');
     bodyBtnDiv.append(btnDiv);
     catDiv.append(bodyBtnDiv);
+
     $("#main_body").append(catDiv);
 
-
     // on catagory button click reset
-    $("#trivia_animals_btn").click(function gameStart() {
-        // general vars 
-        correct = 0;
-        incorrect = 0;
-
-        // // boolean vars
-        // timer;
-        // gameRunning = false;
-        // aPage = false;
-
-        // // empty strings/arrays
-        // a = "";
-        // b = "";
-        // img = "";
-        // alreadyAsked = [];
-
-        // if game is runing button does nothing
-        if (!gameRunning) {
-            gameRunning = true;
-
-            questionAsk()
-        };
-
+    $("#trivia_animals_btn").click(function () {
+        questionAsk()
     });
-});
+};
 
 // main question page
 function questionAsk() {
-    aPage = false;
-    var randNum = Math.floor(Math.random() * 11);
-    var catQuestion = catAnimals[randNum];
-
-    // adding a progress bar funct
-    progressBar(5);
-    $("#bar_wrapper").css("visibility", "visible");
-
-    // asking question
-    var q = $("<h2>");
-    q.attr("data-name", catQuestion.q[0]);
-    q.text(catQuestion.q[0]);
-    $("#body_buttons").append(q);
-    $("#body_buttons").html("");
-
-    // var bodyBtnDiv = $("<div id='body_buttons'>");
-    // creating 4 answer buttons
-    for (i = 2; i < 6; i++) {
-        var btnDiv = $("<button>").text(catQuestion.q[i].a);
-        btnDiv.addClass("btn");
-        var brDiv = $("<br>");
-        btnDiv.append(brDiv);
-        $("#body_buttons").append(btnDiv);
-        
-        // $("#body_buttons").append("<button>" + catQuestion.q[i].a + "</button>");
-        // $("#body_buttons button").addClass("btn");
-        // $("#body_buttons").append("<br>");
-    }
-
-    // on clicked answer
-    $(".btn").click(function anPicked() {
-        a = $(this).text($("#body_buttons"));
-        b = catQuestion.q[1];
-        img = catQuestion.q[6];
-        console.log(a);
-
-        // if correct, incrementv and send to answer page
-        if (a === b) {
-            correct++;
-            $("#body_head").html("<h2>Nice job! You got it right!</h2>");
-            ansPage();
-
-            // if correct, increment^ and send to answer page
-        } else {
-            incorrect++;
-            $("#body_head").html("<h2>Oh no! Thats not right!</h2>");
-            ansPage();
-        };
-    });
-};
-
-// progress bar funct with argument of time
-function progressBar(time) {
+    time = 10;
     width = 100;
 
-    //returning prog bar to green
-    $("#progress_bar").css("background-color", "green");
+    var catQuestion = catAnimals[qNum];
+    $("#body_buttons").html("");
 
-    // setting time per funct call
-    timer = setInterval(qPage, 1000);
+    if (qNum < 10) {
+        qNum++;
 
-    // bar movment/color change funct
-    function qPage() {
-        time--;
-        width -= (width / time);
-        if (width <= 50) {
-            $("#progress_bar").css("background-color", "orange");
-        }
+        // starting timer
+        var timer = setInterval(qPage, 1000);
 
-        if (width <= 25) {
-            $("#progress_bar").css("background-color", "red");
-        }
+        //returning prog bar to green    
+        $("#bar_wrapper").css("visibility", "visible");
+        $("#progress_bar").css("background-color", "green");
 
-        // when timeout on question page 
-        if (time <= 0) {
-
-            // is ansPage() running?
-            if (aPage === false) {
-                aPage = true;
-                incorrect--;
-                clearInterval(timer);
-                ansPage();
-            }
-            else {
-                clearInterval(timer);
-                questionAsk();
-            }
-        } else {
-            console.log(time);
+        // bar movment/color change funct
+        function qPage() {
+            width -= (width / time);
             $("#progress_bar").text(time);
+            console.log(time);
             $("#progress_bar").css("width", width + "%");
+            
+            if (width <= 50) {
+                $("#progress_bar").css("background-color", "orange");
+            }
+            if (width <= 25) {
+                $("#progress_bar").css("background-color", "red");
+            }
+            // when timeout on question page 
+            if (time <= 0) {
+                clearInterval(timer);
+                incorrect++;
+                $("#body_head").text("Oh no! You ran out of time!");
+                answerPage(catQuestion.q[6], catQuestion.q[1]);
+            }
+            time--;
         };
+
+        // asking question
+        $("#body_head").text(catQuestion.q[0]);
+
+        // creating 4 answer buttons
+        for (i = 2; i < 6; i++) {
+            var btnDiv = $("<button>").text(catQuestion.q[i].a);
+            btnDiv.addClass("btn");
+            var brDiv = $("<br>");
+            $("#body_buttons").append(btnDiv);
+            $("#body_buttons").append(brDiv);
+        }
+
+        // on clicked answer
+        $(".btn").click(function anPicked() {
+            clearInterval(timer);
+            a = $(this).text();
+            b = catQuestion.q[1];
+            img = catQuestion.q[6];
+            console.log(a);
+
+            // if correct, increment^ and send to answer page
+            if (a === b) {
+                correct++;
+                $("#body_head").text("Nice job! You got it right!");
+                answerPage(img, b);
+
+                // if incorrect, increment^ and send to answer page
+            } else {
+                incorrect++;
+                $("#body_head").text("Oh no! Thats not right!");
+                answerPage(img, b);
+            };
+        });
+    // when all questions are asked, move to closing page     
+    } else {
+        closeingPage();
+    }
+};
+
+// displaying the answer 
+function answerPage(img, b) {
+    time = 4;
+
+    // starting timer
+    var timer = setInterval(aPage, 1000);
+
+    function aPage() {
+        time--;
+        console.log(time);
+        if (time <= 0) {
+            clearInterval(timer);
+            questionAsk();
+        }
     };
-};
 
-
-function ansPage() {
-    aPage = true;
-    clearInterval(timer);
-    progressBar(5);
     $("#bar_wrapper").css("visibility", "hidden");
-    $("#body_buttons").html("<h3>The correct answer was: " + b + "</h3>");
+    $("#body_buttons").html("");
+
+    var anP = $("<h3>");
+    anP.text("The correct answer was: " + b);
+    $("#body_buttons").append(anP);
     $("#body_buttons").append("<img src=" + img + " alt='gif'>");
+
 };
+
+// finishes game, giving some unique responses 
+function closeingPage() {
+    if (correct >= 10) {
+        $("#body_head").text("You got em all right!");
+    } else if (incorrect <= 0) {
+        $("#body_head").text("You got em all wrong!");
+    } else {
+        $("#body_head").text("Nice job!");
+    }
+
+    $("#body_buttons").html("");
+
+    var correctDiv = $("<div>").text("You got " + correct + " correct.");
+    $("#body_buttons").append(correctDiv);
+
+    var incorrectDiv = $("<div>").text("You got " + incorrect + " incorrect.");
+    $("#body_buttons").append(incorrectDiv);
+
+    var playDiv = $("<div>").text("Wanna play again?");
+    $("#body_buttons").append(playDiv);
+
+    var newGamebtn = $("<button>").text("New Game");
+    newGamebtn.addClass("btn");
+    $("#body_buttons").append(newGamebtn);
+    $(".btn").click(function () {
+        gameStart();
+    });
+}
